@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatter;
 
 public class DashCpuRam {
 //    public static void main(String[] args) {
-////        List<Captura> lista = Gerenciador.leCsvBucketTrusted("trusted-1d4a3f130793f4b0dfc576791dd86b32");
+    ////        List<Captura> lista = Gerenciador.leCsvBucketTrusted("trusted-1d4a3f130793f4b0dfc576791dd86b32");
 //        List<Captura> capturas = new ArrayList<>();
 //
 //        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -62,13 +62,28 @@ public class DashCpuRam {
         }
     }
 
-    public static void getCapturasControlador(List<Captura> lista, String controlador) {
-
+    public static List<Captura> getCapturasControlador(List<Captura> lista, String controlador) {
+        List<Captura> resultado = new ArrayList<>();
         for (Captura c : lista) {
             if (c.getCodigoMaquina().equals(controlador)) {
-
+                resultado.add(c);
+                System.out.println(c);
             }
         }
+        return resultado;
+    }
+
+    public static List<String> getListaControladores(List<Captura> lista) {
+        List<String> resultado = new ArrayList<>();
+        System.out.println("Listando controladores...");
+        for (Captura c : lista) {
+            if (!resultado.contains(c.getCodigoMaquina())) {
+                resultado.add(c.getCodigoMaquina());
+                System.out.println("Controlador identificado: " + c.getCodigoMaquina());
+            }
+        }
+
+        return resultado;
     }
 
 
@@ -237,5 +252,22 @@ public class DashCpuRam {
         System.out.println("Última captura RAM: " + resultado.get("ram").get("valor") + " ás " + resultado.get("ram").get("timestamp"));
 
         return resultado;
+    }
+
+    public static Map<String, Map<String, Map<String, Map<String, String>>>> criarJsonCpuRam (List<Captura> capturas) {
+        Gerenciador.exibeListaCapturas(capturas);
+
+        Map<String, Map<String, Map<String, Map<String, String>>>> mapperResultado = new HashMap<>();
+        List<String> controladores = getListaControladores(capturas);
+
+        for (String c : controladores) {
+            Map<String, Map<String, Map<String, String>>> mapAux = new HashMap<>();
+            mapAux.put("media5Minutos" ,getMediaCpuRamCada5Minutos(getDadosUltimaHora((capturas))));
+            mapAux.put("picoCpuRam", DashCpuRam.getPicosRamCpu(DashCpuRam.getMediaCpuRamCada5Minutos(DashCpuRam.getDadosUltimaHora(capturas))));
+            mapAux.put("ultimasCapturas", DashCpuRam.getUltimasCapturasCpuRam(capturas));
+            mapperResultado.put(c, mapAux);
+        }
+
+        return mapperResultado;
     }
 }

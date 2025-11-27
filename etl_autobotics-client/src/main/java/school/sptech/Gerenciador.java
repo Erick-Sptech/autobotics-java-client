@@ -1,5 +1,6 @@
 package school.sptech;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.io.*;
@@ -500,6 +501,21 @@ public class Gerenciador {
             System.out.println("Erro ao ler arquivo local.");
             System.out.println(e.fillInStackTrace());
             throw new RuntimeException(e);
+        }
+    }
+
+    public static void enviaJsonParaBucketClient(LocalDateTime agora, String nomeDashboard, String nomePasta){
+        String nomeBucketClient = "client-1d4a3f130793f4b0dfc576791dd86b37";
+        DateTimeFormatter formatador = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss");
+
+        File controladoresFile = new File(agora.format(formatador)+ nomeDashboard + ".json");
+        try (S3Client s3 = S3Client.create()) {
+            // Upload dos registros ultimos 6 registros dos controladores
+            s3.putObject(PutObjectRequest.builder()
+                    .bucket(nomeBucketClient)
+                    .key(nomePasta + "/jsons/"+ agora.format(formatador)+ nomeDashboard +".json")
+                    .build(), controladoresFile.toPath());
+            System.out.println("Arquivos enviados com sucesso para o bucket " + nomeBucketClient);
         }
     }
 }
