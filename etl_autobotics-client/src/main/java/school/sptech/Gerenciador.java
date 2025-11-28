@@ -505,7 +505,7 @@ public class Gerenciador {
     }
 
     public static void enviaJsonParaBucketClient(LocalDateTime agora, String nomeDashboard, String nomePasta){
-        String nomeBucketClient = "client-1d4a3f130793f4b0dfc576791dd86b37";
+        String nomeBucketClient = "client-1d4a3f130793f4b0dfc576791dd86b32";
         DateTimeFormatter formatador = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss");
 
         File controladoresFile = new File(agora.format(formatador)+ nomeDashboard + ".json");
