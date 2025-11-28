@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b695a2ab-eb33-4063-b6c6-7f236490955b" name="Changes" comment="" />
+    <list default="true" id="b695a2ab-eb33-4063-b6c6-7f236490955b" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -34,8 +36,9 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "main",
+    "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/joaoo/OneDrive/Área de Trabalho/autobotics-java-client",
+    "last_opened_file_path": "C:/Users/Breno/OneDrive - SPTech School/Área de Trabalho/autobotics/autobotics-java-client",
     "onboarding.tips.debug.path": "C:/Users/erick/OneDrive/Área de Trabalho/sptech/2semestre/pi/autobotics-java-client/src/main/java/school/sptech/Main.java"
   }
 }]]></component>
