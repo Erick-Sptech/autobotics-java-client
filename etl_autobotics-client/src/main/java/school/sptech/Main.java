@@ -31,13 +31,19 @@ public class Main {
         String nomeJsonDashCpuRam = "_cpu_ram";
         String pastaDashCpuRam = "dashboard_cpu_ram";
 
+        String nomeJsonHistoricoAlerta = "_historico_alerta";
+        String pastaHistoricoAlerta = "dashboard_historico_alerta";
+
 
         mapper.writeValue(new File(agora.format(formatador)+ nomeJsonManutencao + ".json"), DashManutencao.criarJsonManutencao(capturas));
         mapper.writeValue(new File(agora.format(formatador)+ nomeJsonDashCpuRam + ".json"), DashCpuRam.criarJsonCpuRam(capturas));
         mapper.writeValue(new File(agora.format(formatador)+ nomeJsonRobotica + ".json"), DashBoardRoboticaNrt.ultimos6RegistosDeContraladores(capturas));
+        mapper.writeValue(new File(agora.format(formatador)+ nomeJsonHistoricoAlerta +".json"), DashHistoricoAlerta.getMediasPorSetor(capturas));
 
         Gerenciador.enviaJsonParaBucketClient(agora, nomeJsonManutencao, pastaDashManutencao);
         Gerenciador.enviaJsonParaBucketClient(agora, nomeJsonDashCpuRam, pastaDashCpuRam);
         Gerenciador.enviaJsonParaBucketClient(agora, nomeJsonRobotica, pastaRoboticaNrt);
+        Gerenciador.enviaJsonParaBucketClient(agora, nomeJsonHistoricoAlerta, pastaHistoricoAlerta);
+
     }
 }
