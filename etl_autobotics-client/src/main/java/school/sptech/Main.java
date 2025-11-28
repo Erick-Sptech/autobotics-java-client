@@ -34,9 +34,8 @@ public class Main {
         String nomeJsonHistoricoAlerta = "_historico_alerta";
         String pastaHistoricoAlerta = "dashboard_historico_alerta";
 
-
-        mapper.writeValue(new File(agora.format(formatador)+ nomeJsonManutencao + ".json"), DashManutencao.criarJsonManutencao(capturas));
         mapper.writeValue(new File(agora.format(formatador)+ nomeJsonDashCpuRam + ".json"), DashCpuRam.criarJsonCpuRam(capturas));
+        mapper.writeValue(new File(agora.format(formatador)+ nomeJsonManutencao + ".json"), DashManutencao.criarJsonManutencao(capturas));
         mapper.writeValue(new File(agora.format(formatador)+ nomeJsonRobotica + ".json"), DashBoardRoboticaNrt.ultimos6RegistosDeContraladores(capturas));
         mapper.writeValue(new File(agora.format(formatador)+ nomeJsonHistoricoAlerta +".json"), DashHistoricoAlerta.getMediasPorSetor(capturas));
 

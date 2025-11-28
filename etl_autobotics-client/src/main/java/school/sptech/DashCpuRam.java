@@ -10,7 +10,6 @@ import java.time.format.DateTimeFormatter;
 
 public class DashCpuRam {
 //    public static void main(String[] args) {
-    ////        List<Captura> lista = Gerenciador.leCsvBucketTrusted("trusted-1d4a3f130793f4b0dfc576791dd86b32");
 //        List<Captura> capturas = new ArrayList<>();
 //
 //        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -44,14 +43,7 @@ public class DashCpuRam {
 //                    codigoMaquina, empresa, setor, top5
 //            ));
 //        }
-//        Gerenciador.exibeListaCapturas(capturas);
-//        Collections.reverse(capturas);
-//        exibirCapturasControlador(capturas, "0001");
-//        getMediaCpuRam(getDadosUltimaHora(capturas));
-//        Gerenciador.exibeListaCapturas(getDadosUltimaHora(capturas));
-//        getMediaCpuRamCada5Minutos(getDadosUltimaHora(capturas));
-//        getPicosRamCpu(getMediaCpuRamCada5Minutos(getDadosUltimaHora(capturas)));
-//        getUltimasCapturasCpuRam(capturas);
+//        criarJsonCpuRam(capturas);
 //    }
 
     public static void exibirCapturasControlador(List<Captura> lista, String controlador) {
@@ -185,8 +177,8 @@ public class DashCpuRam {
             }
             System.out.println(Double.toString(somaCpu/contador));
 
-            linhaResultado.put("cpu", Double.toString(somaCpu/contador));
-            linhaResultado.put("ram", Double.toString(somaRam/contador));
+            linhaResultado.put("cpu", Double.isNaN(somaCpu/contador) ? "0.0" : Double.toString(somaCpu/contador));
+            linhaResultado.put("ram", Double.isNaN(somaCpu/contador) ? "0.0" : Double.toString(somaRam/contador));
             contador = 0;
 
             resultado.put(horaAtual.minusMinutes(i * 5).format(formatador), linhaResultado);
@@ -217,11 +209,11 @@ public class DashCpuRam {
             }
         }
         Map<String, String> mapCpu = new HashMap<>();
-        mapCpu.put("valor", Double.toString(maiorCpu));
+        mapCpu.put("valor", Double.isNaN(maiorCpu) ? "0.0" : Double.toString(maiorCpu));
         mapCpu.put("timestamp", timestampCpu);
 
         Map<String, String> mapRam = new HashMap<>();
-        mapRam.put("valor", Double.toString(maiorRam));
+        mapRam.put("valor", Double.isNaN(maiorRam) ? "0.0" : Double.toString(maiorRam));
         mapRam.put("timestamp", timestampRam);
 
         resultado.put("cpu", mapCpu);
@@ -238,11 +230,11 @@ public class DashCpuRam {
         Captura ultimaCaptura = lista.getLast();
 
         Map<String, String> cpuAux = new HashMap<>();
-        cpuAux.put("valor", Double.toString(ultimaCaptura.getCpu()));
+        cpuAux.put("valor", Double.isNaN(ultimaCaptura.getCpu()) ? "0.0" : Double.toString(ultimaCaptura.getCpu()));
         cpuAux.put("timestamp", ultimaCaptura.getTimestamp());
 
         Map<String, String> ramAux = new HashMap<>();
-        ramAux.put("valor", Double.toString(ultimaCaptura.getRamUsada()));
+        ramAux.put("valor", Double.isNaN(ultimaCaptura.getRamUsada()) ? "0.0" : Double.toString(ultimaCaptura.getRamUsada()));
         ramAux.put("timestamp", ultimaCaptura.getTimestamp());
 
         resultado.put("cpu", cpuAux);
