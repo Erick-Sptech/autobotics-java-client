@@ -307,7 +307,7 @@ public class DashHistoricoDisco {
                 "where ctr.numero_serial = ? and criticidade = 2\n" +
                 "and c.nome = \"Disco\";";
 
-        Double critico = null;
+        Double critico = 0.0;
 
         try {
             if (codigo != null){
@@ -332,13 +332,13 @@ public class DashHistoricoDisco {
                 "\ton s.id_setor = c.fk_setor\n" +
                 "where c.numero_serial = ?;";
 
-        Integer setor = null;
+        Integer setor = 0;
 
         try{
             if (codigo != null){
                 setor = template.queryForObject(sql, Integer.class, codigo);
             } else{
-                setor = null;
+                setor = 0;
             }
         }catch (EmptyResultDataAccessException e){
             System.out.println("codigo sem setor");
