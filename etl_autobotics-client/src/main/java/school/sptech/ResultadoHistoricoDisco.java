@@ -10,16 +10,18 @@ public class ResultadoHistoricoDisco {
     private List<LocalDate> datas;
     private List<Double> medias;
     private List<Double> coeficientes;
+    private List<Double> mudaCadaData;
     private Map<Integer, List<Double>> mediaSetor;
     private LocalDate dataCritica;
     private String quantoFalta;
     private Integer idSetor;
 
-    public ResultadoHistoricoDisco(String codigo, List<LocalDate> datas, List<Double> medias, List<Double> coeficientes, Map<Integer, List<Double>> mediaSetor, LocalDate dataCritica, String quantoFalta, Integer idSetor) {
+    public ResultadoHistoricoDisco(String codigo, List<LocalDate> datas, List<Double> medias, List<Double> coeficientes, List<Double> mudaCadaData, Map<Integer, List<Double>> mediaSetor, LocalDate dataCritica, String quantoFalta, Integer idSetor) {
         this.codigo = codigo;
         this.datas = datas;
         this.medias = medias;
         this.coeficientes = coeficientes;
+        this.mudaCadaData = mudaCadaData;
         this.mediaSetor = mediaSetor;
         this.dataCritica = dataCritica;
         this.quantoFalta = quantoFalta;
@@ -56,6 +58,14 @@ public class ResultadoHistoricoDisco {
 
     public void setCoeficientes(List<Double> coeficientes) {
         this.coeficientes = coeficientes;
+    }
+
+    public List<Double> getMudaCadaData() {
+        return mudaCadaData;
+    }
+
+    public void setMudaCadaData(List<Double> mudaCadaData) {
+        this.mudaCadaData = mudaCadaData;
     }
 
     public Map<Integer, List<Double>> getMediaSetor() {
@@ -97,6 +107,7 @@ public class ResultadoHistoricoDisco {
                 ", datas=" + datas +
                 ", medias=" + medias +
                 ", coeficientes=" + coeficientes +
+                ", mudaCadaData=" + mudaCadaData +
                 ", mediaSetor=" + mediaSetor +
                 ", dataCritica=" + dataCritica +
                 ", quantoFalta='" + quantoFalta + '\'' +

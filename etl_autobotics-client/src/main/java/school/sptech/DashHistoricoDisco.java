@@ -105,7 +105,7 @@ public class DashHistoricoDisco {
             System.out.println("quanto falta string: " + quantoFalta);
             System.out.println("media: " + medias + "\n");
 
-            resultadoJson.add(new ResultadoHistoricoDisco(codigoControlador, datas, medias, coeficientes, mediasSetor, dataCritica, quantoFalta, Setor));
+            resultadoJson.add(new ResultadoHistoricoDisco(codigoControlador, datas, medias, coeficientes, datasDouble, mediasSetor, dataCritica, quantoFalta, Setor));
         }
 
         String nomeArquivo = agora.format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss")) + "_historico_disco" + ".json";
