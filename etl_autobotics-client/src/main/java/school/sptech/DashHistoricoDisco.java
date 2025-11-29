@@ -109,10 +109,10 @@ public class DashHistoricoDisco {
         }
 
         String nomeArquivo = agora.format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss")) + "_historico_disco" + ".json";
-
+        String caminhoLambda = "/tmp/" + nomeArquivo;
         try{
             String json = mapper.writeValueAsString(resultadoJson);
-            mapper.writeValue(new File(nomeArquivo), resultadoJson);
+            mapper.writeValue(new File(caminhoLambda), resultadoJson);
             System.out.println(json);
         }catch (JsonProcessingException e){
             System.out.println("erro ao processar o json");
@@ -120,7 +120,7 @@ public class DashHistoricoDisco {
             System.out.println("erro de entrada e saida");
         }
 
-        File controladoresFile = new File(nomeArquivo);
+        File controladoresFile = new File(caminhoLambda);
         try (S3Client s3 = S3Client.create()) {
             s3.putObject(PutObjectRequest.builder()
                     .bucket(nomeBucketClient)
@@ -294,8 +294,7 @@ public class DashHistoricoDisco {
     }
 
     public static Double buscarCritico(String codigo){
-        Connection con = new Connection();
-        JdbcTemplate template = con.getTemplate();
+        JdbcTemplate template = Connection.getTemplate();
 
         String sql = "select p.valor from parametro p \n" +
                 "inner join componente c\n" +
@@ -323,8 +322,7 @@ public class DashHistoricoDisco {
     }
 
     public static Integer buscarSetorID(String codigo){
-        Connection con = new Connection();
-        JdbcTemplate template = con.getTemplate();
+        JdbcTemplate template = Connection.getTemplate();
 
         String sql = "select s.id_setor\n" +
                 "from setor s\n" +

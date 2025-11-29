@@ -1,10 +1,6 @@
 package school.sptech;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.cglib.core.Local;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.endpoints.internal.Value;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,7 +11,7 @@ import java.util.*;
 import static school.sptech.DashHistoricoDisco.executarEtlDisco;
 
 public class Main {
-    public static void main(String[] args) throws IOException {
+    public static void rodarTratamento(){
         String nomeBucketTrusted = "trusted-1d4a3f130793f4b0dfc576791dd86b32";
         List<Captura> capturas = Gerenciador.leCsvBucketTrusted(nomeBucketTrusted);
 
@@ -38,10 +34,15 @@ public class Main {
 
         executarEtlDisco(capturas);
 
-        mapper.writeValue(new File(agora.format(formatador)+ nomeJsonDashCpuRam + ".json"), DashCpuRam.criarJsonCpuRam(capturas));
-        mapper.writeValue(new File(agora.format(formatador)+ nomeJsonManutencao + ".json"), DashManutencao.criarJsonManutencao(capturas));
-        mapper.writeValue(new File(agora.format(formatador)+ nomeJsonRobotica + ".json"), DashBoardRoboticaNrt.ultimos6RegistosDeContraladores(capturas));
-        mapper.writeValue(new File(agora.format(formatador)+ nomeJsonHistoricoAlerta +".json"), DashHistoricoAlerta.getMediasPorSetor(capturas));
+        try{
+            mapper.writeValue(new File("/tmp/" + agora.format(formatador)+ nomeJsonDashCpuRam + ".json"), DashCpuRam.criarJsonCpuRam(capturas));
+            mapper.writeValue(new File("/tmp/" + agora.format(formatador)+ nomeJsonManutencao + ".json"), DashManutencao.criarJsonManutencao(capturas));
+            mapper.writeValue(new File("/tmp/" + agora.format(formatador)+ nomeJsonRobotica + ".json"), DashBoardRoboticaNrt.ultimos6RegistosDeContraladores(capturas));
+            mapper.writeValue(new File("/tmp/" + agora.format(formatador)+ nomeJsonHistoricoAlerta +".json"), DashHistoricoAlerta.getMediasPorSetor(capturas));
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+
 
         Gerenciador.enviaJsonParaBucketClient(agora, nomeJsonManutencao, pastaDashManutencao);
         Gerenciador.enviaJsonParaBucketClient(agora, nomeJsonDashCpuRam, pastaDashCpuRam);

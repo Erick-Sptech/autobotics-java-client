@@ -273,7 +273,7 @@ public class DashManutencao {
     }
 
     public static Map<String, Map<String, List<Double>>> criarJsonManutencao(List<Captura> capturas){
-        Gerenciador.exibeListaCapturas(capturas);
+        //Gerenciador.exibeListaCapturas(capturas);
 
         DashManutencao.mediaRamPorDiaDaSemana(capturas);
         DashManutencao.mediaRamPorDiaDaSemana(capturas);
