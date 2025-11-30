@@ -1,7 +1,10 @@
 package school.sptech;
 
 import com.google.protobuf.MapEntry;
+import software.amazon.awssdk.services.s3.endpoints.internal.Value;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 import java.time.LocalDateTime;
@@ -17,7 +20,7 @@ public class DashCpuRam {
 //        for (int i = 0; i < 10000; i++) {
 //
 //            // Timestamp dinâmico: agora - i minutos
-//            String timestamp = LocalDateTime.now().minusSeconds(i * 10).format(formatter);
+//            String timestamp = ZonedDateTime.now(ZoneId.of("America/Sao_Paulo")).minusSeconds(i * 10).format(formatter);
 //
 //            // valores variados só para ficar realista
 //            double cpu = 10 + (i % 50);                  // varia entre 10 e 59
@@ -43,7 +46,7 @@ public class DashCpuRam {
 //                    codigoMaquina, empresa, setor, top5
 //            ));
 //        }
-//        criarJsonCpuRam(capturas);
+//        getDadosUltimaHora(capturas);
 //    }
 
     public static void exibirCapturasControlador(List<Captura> lista, String controlador) {
@@ -59,7 +62,6 @@ public class DashCpuRam {
         for (Captura c : lista) {
             if (c.getCodigoMaquina().equals(controlador)) {
                 resultado.add(c);
-                System.out.println(c);
             }
         }
         return resultado;
@@ -107,25 +109,21 @@ public class DashCpuRam {
     public static List<Captura> getDadosUltimaHora(List<Captura> lista) {
         List<Captura> capturasUltimaHora = new ArrayList<>();
         Integer index = lista.size() - 1;
+        lista = lista.reversed();
 
         DateTimeFormatter formatadorHora = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        ZoneId zona = ZoneId.of("America/Sao_Paulo");
+        ZonedDateTime maiorData = ZonedDateTime.now(zona);
+        System.out.println("Pegandos dados a partir de :" + maiorData.minusHours(1));
 
-        LocalDateTime maiorData = LocalDateTime.parse(lista.get(index).getTimestamp(), formatadorHora);
 
-
-        LocalDateTime periodo1Hora = maiorData.minusHours(1);
-
-        if (LocalDateTime.parse(lista.getFirst().getTimestamp(), formatadorHora).isAfter(periodo1Hora)
-                || LocalDateTime.parse(lista.getFirst().getTimestamp(), formatadorHora).isEqual(periodo1Hora)) {
-            return lista;
-        }
+        ZonedDateTime periodo1Hora = maiorData.minusHours(1);
 
         while (true) {
-            LocalDateTime dataCaptura = LocalDateTime.parse(lista.get(index).getTimestamp(), formatadorHora);
-            System.out.println("Comparando se " + dataCaptura + " veio depois de " + periodo1Hora);
+            ZonedDateTime dataCaptura = LocalDateTime.parse(lista.get(index).getTimestamp(), formatadorHora).atZone(zona);
             if (dataCaptura.isAfter(periodo1Hora) || dataCaptura.isEqual(periodo1Hora)) {
-//                System.out.println(dataCaptura + " certo");
                 capturasUltimaHora.add(lista.get(index));
+                System.out.println(dataCaptura + " veio depois de " + periodo1Hora + ".");
             } else {
                 System.out.println(dataCaptura + " veio antes de " + periodo1Hora + ".");
                 break;
@@ -136,28 +134,40 @@ public class DashCpuRam {
         return capturasUltimaHora;
     }
 
-    public static Map<String, Double> getMediaCpuRam(List<Captura> lista) {
+    public static Map<String, Map<String, String>> getMediaCpuRam(List<Captura> lista) {
+        Map<String, Map<String, String>> resultado = new HashMap<>();
+
         Double somaCpu = 0.0;
         Double somaRam = 0.0;
+        Double totalRam = lista.getFirst().getRamTotal();
 
         for (Captura c : lista) {
             somaRam += c.getRamUsada();
             somaCpu += c.getCpu();
         }
 
-        Map<String, Double> resultado = new HashMap<>();
-        resultado.put("cpu", somaCpu/lista.size());
-        resultado.put("ram", somaRam/lista.size());
+        Map<String, String> medias = new HashMap<>();
+        medias.put("cpu", Double.isNaN(somaCpu/lista.size()) ? "0.0" : String.format("%.1f", somaCpu/lista.size()).replace(",", "."));
+        medias.put("ram", Double.isNaN(somaRam/lista.size() / totalRam * 100) ? "0.0" : String.format("%.1f", somaRam/lista.size()).replace(",", "."));
+        resultado.put("medias", medias);
+        System.out.println("TESTE MAP: " + medias.get("cpu"));
 
-        System.out.println("Média de CPU: " + resultado.get("cpu") + "\nMédia de RAM: " + resultado.get("ram"));
+        Map<String, String> metricas = new HashMap<>();
+        metricas.put("ramTotal", Double.isNaN(totalRam) ? "0.0" : String.format("%.1f", lista.getFirst().getRamTotal()).replace(",", "."));
+        metricas.put("ramUsada", Double.isNaN((somaRam / lista.size()) / 100 * lista.getFirst().getRamTotal()) ? "0.0" : String.format("%.1f", somaRam / lista.size() / 100 * lista.getFirst().getRamTotal()).replace(",", "."));
+        resultado.put("metricas", metricas);
+
+        System.out.println("Média de CPU: " + resultado.get("medias").get("cpu") + "\nMédia de RAM: " + resultado.get("medias").get("ram"));
 
         return resultado;
     }
 
     public static Map<String, Map<String, String>> getMediaCpuRamCada5Minutos(List<Captura> lista) {
-        LocalDateTime horaAtual = LocalDateTime.now();
+        ZoneId zona = ZoneId.of("America/Sao_Paulo");
+        ZonedDateTime horaAtual = ZonedDateTime.now(zona);
         Map<String, Map<String, String>> resultado = new LinkedHashMap<>();
         DateTimeFormatter formatador = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        DateTimeFormatter formatadorJson = DateTimeFormatter.ofPattern("HH:mm");
         Double somaCpu;
         Double somaRam;
         Integer contador = 0;
@@ -168,8 +178,10 @@ public class DashCpuRam {
             somaRam = 0.0;
 
             for (Captura c : lista) {
-                if (LocalDateTime.parse(c.getTimestamp(), formatador).isAfter(horaAtual.minusMinutes((i * 5) + 5)) &&
-                        LocalDateTime.parse(c.getTimestamp(), formatador).isBefore(horaAtual.minusMinutes(i * 5))) {
+                LocalDateTime horaCap = LocalDateTime.parse(c.getTimestamp(), formatador);
+                ZonedDateTime horaCapFormt = horaCap.atZone(zona);
+                if (horaCapFormt.isAfter(horaAtual.minusMinutes((i * 5) + 5)) &&
+                        horaCapFormt.isBefore(horaAtual.minusMinutes(i * 5))) {
                     somaCpu += c.getCpu();
                     somaRam += c.getRamUsada();
                     contador ++;
@@ -177,11 +189,11 @@ public class DashCpuRam {
             }
             System.out.println(Double.toString(somaCpu/contador));
 
-            linhaResultado.put("cpu", Double.isNaN(somaCpu/contador) ? "0.0" : Double.toString(somaCpu/contador));
-            linhaResultado.put("ram", Double.isNaN(somaCpu/contador) ? "0.0" : Double.toString(somaRam/contador));
+            linhaResultado.put("cpu", Double.isNaN(somaCpu/contador) ? "0.0" : String.format("%.1f", somaCpu / contador).replace(",", "."));
+            linhaResultado.put("ram", Double.isNaN(somaCpu/contador) ? "0.0" : String.format("%.1f", somaRam / contador).replace(",", "."));
             contador = 0;
 
-            resultado.put(horaAtual.minusMinutes(i * 5).format(formatador), linhaResultado);
+            resultado.put(horaAtual.minusMinutes(i * 5).format(formatadorJson), linhaResultado);
         }
 
         for (Map.Entry<String, Map<String, String>> entry : resultado.entrySet()) {
@@ -209,11 +221,11 @@ public class DashCpuRam {
             }
         }
         Map<String, String> mapCpu = new HashMap<>();
-        mapCpu.put("valor", Double.isNaN(maiorCpu) ? "0.0" : Double.toString(maiorCpu));
+        mapCpu.put("valor", Double.isNaN(maiorCpu) ? "0.0" : String.format("%.1f", maiorCpu).replace(",", "."));
         mapCpu.put("timestamp", timestampCpu);
 
         Map<String, String> mapRam = new HashMap<>();
-        mapRam.put("valor", Double.isNaN(maiorRam) ? "0.0" : Double.toString(maiorRam));
+        mapRam.put("valor", Double.isNaN(maiorRam) ? "0.0" : String.format("%.1f", maiorRam).replace(",", "."));
         mapRam.put("timestamp", timestampRam);
 
         resultado.put("cpu", mapCpu);
@@ -227,15 +239,17 @@ public class DashCpuRam {
 
     public static Map<String, Map<String, String>> getUltimasCapturasCpuRam (List<Captura> lista) {
         Map<String, Map<String, String>> resultado = new HashMap<>();
+        DateTimeFormatter formatador = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        DateTimeFormatter formatadorJson = DateTimeFormatter.ofPattern("HH:mm");
         Captura ultimaCaptura = lista.getLast();
 
         Map<String, String> cpuAux = new HashMap<>();
-        cpuAux.put("valor", Double.isNaN(ultimaCaptura.getCpu()) ? "0.0" : Double.toString(ultimaCaptura.getCpu()));
-        cpuAux.put("timestamp", ultimaCaptura.getTimestamp());
+        cpuAux.put("valor", Double.isNaN(ultimaCaptura.getCpu()) ? "0.0" : String.format("%.1f", ultimaCaptura.getCpu()).replace(",", "."));
+        cpuAux.put("timestamp", LocalDateTime.parse(ultimaCaptura.getTimestamp(), formatador).format(formatadorJson));
 
         Map<String, String> ramAux = new HashMap<>();
-        ramAux.put("valor", Double.isNaN(ultimaCaptura.getRamUsada()) ? "0.0" : Double.toString(ultimaCaptura.getRamUsada()));
-        ramAux.put("timestamp", ultimaCaptura.getTimestamp());
+        ramAux.put("valor", Double.isNaN(ultimaCaptura.getRamUsada()) ? "0.0" : String.format("%.1f", ultimaCaptura.getRamUsada()).replace(",", "."));
+        ramAux.put("timestamp", LocalDateTime.parse(ultimaCaptura.getTimestamp(), formatador).format(formatadorJson));
 
         resultado.put("cpu", cpuAux);
         resultado.put("ram", ramAux);
@@ -246,17 +260,36 @@ public class DashCpuRam {
         return resultado;
     }
 
+    public static Map<String, Map<String, String>> getProcessos (List<Captura> capturas) {
+        Map<String, Map<String, String>> resultado = new HashMap<>();
+        DateTimeFormatter formatador = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        DateTimeFormatter formatadorJson = DateTimeFormatter.ofPattern("HH:mm");
+
+        for(Captura c : capturas) {
+            Map<String, String> mapAux = new HashMap<>();
+            mapAux.put("topProcessos", c.getTop5Processos());
+            mapAux.put("timestamp", LocalDateTime.parse(c.getTimestamp(), formatador).format(formatadorJson));
+            resultado.put("processos", mapAux);
+        }
+        Map<String, String> mapAux = new HashMap<>();
+        mapAux.put("totalProcessos", capturas.getFirst().getNumProcessos().toString());
+        resultado.put("totalProcessos", mapAux);
+        return resultado;
+    }
+
     public static Map<String, Map<String, Map<String, Map<String, String>>>> criarJsonCpuRam (List<Captura> capturas) {
-        Gerenciador.exibeListaCapturas(capturas);
 
         Map<String, Map<String, Map<String, Map<String, String>>>> mapperResultado = new HashMap<>();
         List<String> controladores = getListaControladores(capturas);
 
         for (String c : controladores) {
             Map<String, Map<String, Map<String, String>>> mapAux = new HashMap<>();
-            mapAux.put("media5Minutos" ,getMediaCpuRamCada5Minutos(getDadosUltimaHora((capturas))));
-            mapAux.put("picoCpuRam", DashCpuRam.getPicosRamCpu(DashCpuRam.getMediaCpuRamCada5Minutos(DashCpuRam.getDadosUltimaHora(capturas))));
-            mapAux.put("ultimasCapturas", DashCpuRam.getUltimasCapturasCpuRam(capturas));
+
+            mapAux.put("media5Minutos" ,getMediaCpuRamCada5Minutos(getDadosUltimaHora((getCapturasControlador(capturas, c)))));
+            mapAux.put("picoCpuRam", getPicosRamCpu(getMediaCpuRamCada5Minutos(getDadosUltimaHora(getCapturasControlador(capturas, c)))));
+            mapAux.put("ultimasCapturas", getUltimasCapturasCpuRam(getDadosUltimaHora(getCapturasControlador(capturas, c))));
+            mapAux.put("mediaCpuRam", getMediaCpuRam(getDadosUltimaHora(getCapturasControlador(capturas, c))));
+            mapAux.put("topProcessos", getProcessos(getDadosUltimaHora(getCapturasControlador(capturas, c))));
             mapperResultado.put(c, mapAux);
         }
 
