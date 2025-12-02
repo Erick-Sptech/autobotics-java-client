@@ -1,6 +1,7 @@
 package school.sptech;
 
 import com.google.protobuf.MapEntry;
+import net.bytebuddy.asm.Advice;
 import software.amazon.awssdk.services.s3.endpoints.internal.Value;
 
 import java.time.ZoneId;
@@ -107,30 +108,23 @@ public class DashCpuRam {
 //    }
 //}
     public static List<Captura> getDadosUltimaHora(List<Captura> lista) {
-        List<Captura> capturasUltimaHora = new ArrayList<>();
-        Integer index = lista.size() - 1;
-        lista = lista.reversed();
-
         DateTimeFormatter formatadorHora = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        ZoneId zona = ZoneId.of("America/Sao_Paulo");
-        ZonedDateTime maiorData = ZonedDateTime.now(zona);
-        System.out.println("Pegandos dados a partir de :" + maiorData.minusHours(1));
+        LocalDateTime maiorData = LocalDateTime.now();
+        System.out.println("HORARIO ATUAL: " + maiorData);
+        LocalDateTime menorData = maiorData.minusHours(1);
 
+        System.out.println("Primeiro Item: " + lista.getFirst());
+        System.out.println("Último Item: " + lista.getLast());
 
-        ZonedDateTime periodo1Hora = maiorData.minusHours(1);
+        List<Captura> capturasUltimaHora = new ArrayList<>();
 
-        while (true) {
-            ZonedDateTime dataCaptura = LocalDateTime.parse(lista.get(index).getTimestamp(), formatadorHora).atZone(zona);
-            if (dataCaptura.isAfter(periodo1Hora) || dataCaptura.isEqual(periodo1Hora)) {
-                capturasUltimaHora.add(lista.get(index));
-                System.out.println(dataCaptura + " veio depois de " + periodo1Hora + ".");
-            } else {
-                System.out.println(dataCaptura + " veio antes de " + periodo1Hora + ".");
-                break;
+        for(Captura c : lista) {
+            LocalDateTime horaCaptura = LocalDateTime.parse(c.getTimestamp(), formatadorHora);
+            if (horaCaptura.isAfter(menorData) && horaCaptura.isBefore(maiorData)) {
+                capturasUltimaHora.add(c);
+                System.out.println(horaCaptura.format(formatadorHora) + " veio antes de " + maiorData + " e depois de " + menorData);
             }
-            index--;
         }
-
         return capturasUltimaHora;
     }
 
